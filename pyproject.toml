@@ -14,6 +14,9 @@ django = "^3.0.5"
 discord-py = "^1.3.3"
 click = "^7.1.1"
 aiocache = {version = "^0.11.1", extras=["redis"]}
+python-dotenv = "^0.13.0"
+colorama = "^0.4.3"
+aiologger = "^0.5.0"
 
 
 [tool.pyflow.dev-dependencies]
