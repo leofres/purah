@@ -9,6 +9,7 @@ Discord Application Framework for humans
 """
 
 import builtins
+from collections import namedtuple
 import os
 import re
 
@@ -28,7 +29,6 @@ builtins._ = translate
 
 from discord.ext.commands import command, check, cooldown
 
-from .utils import namedtuple_with_defaults as namedtuple
 from .conf import Config, Extension
 from .db import Database
 from .cog import Cog

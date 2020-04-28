@@ -4,6 +4,8 @@
 :license: Apache-2.0 OR MIT
 """
 
+from asgiref.sync import sync_to_async
+
 import discord
 from django.conf import settings as django_settings
 from django.db import models
@@ -39,9 +41,39 @@ class Model(models.Model):
     def is_loaded(self):
         return self._is_loaded
 
+    @sync_to_async
     def load(self):
         self.refresh_from_db()
         self._is_loaded = True
+
+    def sync_load(self):
+        self.refresh_from_db()
+        self._is_loaded = True
+
+    @sync_to_async
+    def save(self, validate=True, **kwargs):
+        if validate:
+            self.validate()
+        super().save(**kwargs)
+
+    def sync_save(self, validate=True, **kwargs):
+        if validate:
+            self.sync_validate()
+        super().save(**kwargs)
+
+    @sync_to_async
+    def validate(self):
+        self.full_clean()
+
+    def sync_validate(self):
+        self.full_clean()
+
+    @sync_to_async
+    def delete(self, keep_parents=False, **kwargs):
+        super().delete(keep_parents=keep_parents, **kwargs)
+
+    def sync_delete(self, keep_parents=False, **kwargs):
+        super().delete(keep_parents=keep_parents, **kwargs)
 
 
 class CoreSettings(Model):
@@ -59,45 +91,15 @@ class DiscordModel(Model):
     _discord_cls = None
 
     @classmethod
-    def connect(cls, discord_obj):
+    async def from_discord_obj(cls, discord_obj):
         """Create a Hero object from a Discord object"""
         if not isinstance(discord_obj, cls.discord_cls):
             raise TypeError(f"discord_obj has to be a discord.{cls.discord_cls.__name__} "
                             f"but a {type(discord_obj).__name__} was passed")
         obj = cls(id=discord_obj.id)
         obj._discord_obj = discord_obj
-        obj.load()
+        await obj.load()
         return obj
-
-    @classmethod
-    def get(cls, *args, **kwargs):
-        if isinstance(args[0], cls._discord_cls):
-            if len(args) != 1:
-                raise TypeError(f"Unexpected arguments {' '.join(args[1:])}")
-            obj = super().get(id=args[0].id, **kwargs)
-            obj._discord_obj = args[0]
-            return obj
-        return super().get(*args, **kwargs)
-
-    @classmethod
-    def get_or_create(cls, *args, **kwargs):
-        if isinstance(args[0], cls._discord_cls):
-            if len(args) != 1:
-                raise TypeError(f"Unexpected arguments {' '.join(args[1:])}")
-            obj = super().get_or_create(id=args[0].id, **kwargs)
-            obj._discord_obj = args[0]
-            return obj
-        return super().get_or_create(*args, **kwargs)
-
-    @classmethod
-    def create(cls, *args, **kwargs):
-        if isinstance(args[0], cls._discord_cls):
-            if len(args) != 1:
-                raise TypeError(f"Unexpected arguments {' '.join(args[1:])}")
-            obj = super().create(id=args[0].id, **kwargs)
-            obj._discord_obj = args[0]
-            return obj
-        return super().create(*args, **kwargs)
 
     @classmethod
     async def fetch(cls):
@@ -127,7 +129,7 @@ class DiscordModel(Model):
         return str(self)
 
     def __hash__(self):
-        return self.id
+        return hash(self.id)
 
 
 # USER_ACCESS_CACHE_KEY = "{user.id}_{queried_field}_{method}"
@@ -141,12 +143,23 @@ class User(DiscordModel):
 
     _discord_cls = discord.User
 
+    @sync_to_async
     def delete(self, using=None, keep_parents=False):
-        super().delete(using=using, keep_parents=keep_parents)
+        super().sync_delete(using=using, keep_parents=keep_parents)
         self.__class__.create(id=self.id, is_active=False)
 
+    def sync_delete(self, using=None, keep_parents=False):
+        super().sync_delete(using=using, keep_parents=keep_parents)
+        self.__class__.create(id=self.id, is_active=False)
+
+    @sync_to_async
     def load(self):
-        super().load()
+        super().sync_load()
+        if not self.is_active:
+            raise self.InactiveUser(f"The user {self.id} is inactive")
+
+    def sync_load(self):
+        super().sync_load()
         if not self.is_active:
             raise self.InactiveUser(f"The user {self.id} is inactive")
 
@@ -265,24 +278,23 @@ class Member(DiscordModel):
     user = fields.UserField(on_delete=models.CASCADE)
     guild = fields.GuildField(on_delete=models.CASCADE)
 
-    def __getattribute__(self, name):
+    def __getattr__(self, name):
         if name == 'id':
             _discord_obj = getattr(self, '_discord_obj', None)
             if _discord_obj is not None:
                 return self._discord_obj.id
-        return super().__getattribute__(name)
 
     _discord_cls = discord.Member
 
     @classmethod
-    def connect(cls, discord_obj):
+    async def connect(cls, discord_obj):
         """Create a Hero object from a Discord object"""
         if not isinstance(discord_obj, discord.Member):
             raise TypeError(f"discord_obj has to be a discord.Member "
                             f"but a {type(discord_obj).__name__} was passed")
         obj = cls(user=User.connect(discord_obj.user), guild=Guild.connect(discord_obj.guild))
         obj._discord_obj = discord_obj
-        obj.load()
+        await obj.load()
         return obj
 
 

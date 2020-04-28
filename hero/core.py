@@ -40,7 +40,7 @@ class Core(commands.Bot):
         self.cache.core = self
         self.config = config
         self.settings = settings
-        self.settings.load()
+        self.settings.sync_load()
         super(Core, self).__init__(command_prefix=self.get_prefixes(),
                                    loop=loop, description=self.get_description(),
                                    pm_help=None, cache_auth=False,
@@ -204,7 +204,7 @@ class Core(commands.Bot):
     def set_prefixes(self, prefixes):
         self.settings.prefixes = prefixes
         self.command_prefix = prefixes
-        self.settings.save()
+        self.settings.save(validate=True)
 
     def get_description(self):
         return self.settings.description

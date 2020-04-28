@@ -78,15 +78,7 @@ def main(test, **kwargs):
 
     from hero.models import CoreSettings
 
-    # db config values
-    settings = CoreSettings(os.getenv('NAMESPACE'))
-    try:
-        settings.load()
-    except CoreSettings.DoesNotExist:
-        settings.prefixes = [prompt("Bot command prefix", value_proc=str, default='!')]
-        settings.description = [prompt("Short description of your bot", value_proc=str, default='')]
-        settings.save()
-
+    # setup asyncio loop
     try:
         # noinspection PyUnresolvedReferences
         import uvloop
@@ -98,6 +90,17 @@ def main(test, **kwargs):
         asyncio.set_event_loop(asyncio.ProactorEventLoop())
 
     loop = asyncio.get_event_loop()
+
+    # db config values
+    settings = CoreSettings(os.getenv('NAMESPACE'))
+    try:
+        settings.sync_load()
+    except CoreSettings.DoesNotExist:
+        settings.prefixes = [prompt("Bot command prefix", value_proc=str, default='!')]
+        settings.description = [prompt("Short description of your bot", value_proc=str, default='')]
+        settings.save()
+
+
     with hero.Core(config=config, settings=settings, name=os.getenv('NAMESPACE', 'default'), loop=loop) as core:
         # handle database model changes
         management.call_command('makemigrations', interactive=False)
