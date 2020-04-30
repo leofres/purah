@@ -17,17 +17,18 @@ from django.db.models.functions import Cast
 
 import hero
 from hero import fields
+from .utils import sync_to_async_threadsafe
 
 
 class QuerySet(_models.QuerySet):
-    @sync_to_async
+    @sync_to_async_threadsafe
     def get(self, *args, **kwargs):
         return super(QuerySet, self).get(*args, **kwargs)
 
     def sync_get(self, *args, **kwargs):
         return super(QuerySet, self).get(*args, **kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def create(self, *args, **kwargs):
         self.create(*args, **kwargs)
 
@@ -40,14 +41,14 @@ class QuerySet(_models.QuerySet):
     async def get_or_create(self, *args, **kwargs):
         return await self._get_or_create(*args, **kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def _get_or_create(self, *args, **kwargs):
         return super(QuerySet, self).get_or_create(*args, **kwargs)
 
     def sync_get_or_create(self, *args, **kwargs):
         return super(QuerySet, self).get_or_create(*args, **kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def update_or_create(self, defaults=None, **kwargs):
         self.sync_update_or_create(defaults=defaults, **kwargs)
 
@@ -69,7 +70,7 @@ class QuerySet(_models.QuerySet):
             obj.sync_save(using=self.db)
         return obj, False
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def bulk_create(self, *args, **kwargs):
         return super(QuerySet, self).bulk_create(*args, **kwargs)
 
@@ -78,7 +79,7 @@ class QuerySet(_models.QuerySet):
 
     # have to reimplement this because there is a query method call (update)
     # in there which has to be changed to sync_update
-    @sync_to_async
+    @sync_to_async_threadsafe
     def bulk_update(self, objs, _fields, batch_size=None):
         return self.sync_bulk_update(objs, _fields, batch_size=None)
 
@@ -123,21 +124,21 @@ class QuerySet(_models.QuerySet):
                 self.filter(pk__in=pks).sync_update(**update_kwargs)
     sync_bulk_update.alters_data = True
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def count(self):
         return super(QuerySet, self).count()
 
     def sync_count(self):
         return super(QuerySet, self).count()
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def in_bulk(self, *args, **kwargs):
         return super(QuerySet, self).in_bulk(*args, **kwargs)
 
     def sync_in_bulk(self, *args, **kwargs):
         return super(QuerySet, self).in_bulk(*args, **kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def iterator(self, *args, **kwargs):
         return super(QuerySet, self).iterator(*args, **kwargs)
 
@@ -147,7 +148,7 @@ class QuerySet(_models.QuerySet):
     async def latest(self, *args, **kwargs):
         return await self._latest(*args, **kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def _latest(self, *args, **kwargs):
         return super(QuerySet, self).latest(*args)
 
@@ -157,7 +158,7 @@ class QuerySet(_models.QuerySet):
     async def earliest(self, *args, **kwargs):
         return await self.__earliest(*args, **kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def __earliest(self, *args, **kwargs):
         return super(QuerySet, self).earliest(*args)
 
@@ -167,7 +168,7 @@ class QuerySet(_models.QuerySet):
     async def first(self):
         await self._first()
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def _first(self):
         return super(QuerySet, self).first()
 
@@ -177,35 +178,35 @@ class QuerySet(_models.QuerySet):
     async def last(self):
         await self._last()
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def _last(self):
         return super(QuerySet, self).last()
 
     def sync_last(self):
         return super(QuerySet, self).last()
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def aggregate(self, *args, **kwargs):
         return super(QuerySet, self).aggregate(*args, **kwargs)
 
     def sync_aggregate(self, *args, **kwargs):
         return super(QuerySet, self).aggregate(*args, **kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def exists(self):
         return super(QuerySet, self).exists()
 
     def sync_exists(self):
         return super(QuerySet, self).exists()
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def update(self, *args, **kwargs):
         return super(QuerySet, self).update(**kwargs)
 
     def sync_update(self, *args, **kwargs):
         return super(QuerySet, self).update(**kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def delete(self, *args, **kwargs):
         return super(QuerySet, self).delete()
 
@@ -248,7 +249,7 @@ class Model(_models.Model):
     def is_loaded(self):
         return self._is_loaded
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def load(self):
         self.refresh_from_db()
         self._is_loaded = True
@@ -257,32 +258,28 @@ class Model(_models.Model):
         self.refresh_from_db()
         self._is_loaded = True
 
-    @sync_to_async
-    def save(self, validate=True, **kwargs):
-        if validate:
-            self.validate()
+    @sync_to_async_threadsafe
+    def save(self, **kwargs):
         super().save(**kwargs)
 
-    def sync_save(self, validate=True, **kwargs):
-        if validate:
-            self.sync_validate()
+    def sync_save(self, **kwargs):
         super().save(**kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def validate(self):
         self.full_clean()
 
     def sync_validate(self):
         self.full_clean()
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def delete(self, keep_parents=False, **kwargs):
         super().delete(keep_parents=keep_parents, **kwargs)
 
     def sync_delete(self, keep_parents=False, **kwargs):
         super().delete(keep_parents=keep_parents, **kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     @classmethod
     def get(cls, **kwargs):
         return cls.objects.get(**kwargs)
@@ -291,7 +288,7 @@ class Model(_models.Model):
     def sync_get(cls, **kwargs):
         return cls.objects.get(**kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     @classmethod
     def create(cls, **kwargs):
         return cls.objects.create(**kwargs)
@@ -300,7 +297,7 @@ class Model(_models.Model):
     def sync_create(cls, **kwargs):
         return cls.objects.create(**kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     @classmethod
     def get_or_create(cls, defaults=None, **kwargs):
         return cls.objects.get_or_create(defaults=defaults, **kwargs)
@@ -309,7 +306,7 @@ class Model(_models.Model):
     def sync_get_or_create(cls, defaults=None, **kwargs):
         return cls.objects.get_or_create(defaults=defaults, **kwargs)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     @classmethod
     def update_or_create(cls, defaults=None, **kwargs):
         return cls.objects.update_or_create(defaults=defaults, **kwargs)
@@ -519,7 +516,7 @@ class User(DiscordModel):
 
     _discord_cls = discord.User
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def delete(self, using=None, keep_parents=False):
         super().sync_delete(using=using, keep_parents=keep_parents)
         self.__class__.create(id=self.id, is_active=False)
@@ -528,7 +525,7 @@ class User(DiscordModel):
         super().sync_delete(using=using, keep_parents=keep_parents)
         self.__class__.create(id=self.id, is_active=False)
 
-    @sync_to_async
+    @sync_to_async_threadsafe
     def load(self):
         super().sync_load()
         if not self.is_active:

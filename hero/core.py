@@ -201,17 +201,23 @@ class Core(commands.Bot):
     def get_prefixes(self):
         return self.settings.prefixes
 
-    def set_prefixes(self, prefixes):
+    async def set_prefixes(self, prefixes):
+        old_prefixes = self.settings.prefixes
         self.settings.prefixes = prefixes
+        try:
+            await self.settings.save()
+        except Exception:
+            self.settings.prefixes = old_prefixes
+            raise
         self.command_prefix = prefixes
-        self.settings.save(validate=True)
+        await self.settings.save()
 
     def get_description(self):
         return self.settings.description
 
-    def set_description(self, description: str):
+    async def set_description(self, description: str):
         self.settings.description = description
-        self.settings.save()
+        await self.settings.save()
 
     def _load_cogs(self):
         # discord and hero each have their own definition of an extension

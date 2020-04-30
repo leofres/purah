@@ -22,7 +22,6 @@ def get_cache(namespace=None):
         pass
 
     _cache_config = aiocache.caches.get_alias_config('default')
-    print(_cache_config)
     base_namespace = _cache_config['namespace']
     if not base_namespace:
         actual_namespace = namespace

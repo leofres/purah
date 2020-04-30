@@ -14,6 +14,8 @@ import re
 
 import aiohttp
 
+from asgiref.sync import SyncToAsync
+
 import websockets
 
 from discord.utils import maybe_coroutine
@@ -109,6 +111,15 @@ def autorestart(delay_start=None, pause=None, restart_check=None):
         return wrapped
 
     return wrapper
+
+
+# somehow asgiref messed up their class decorators??? so this is necessary
+class SyncToAsyncThreadSafe(SyncToAsync):
+    def __init__(self, func):
+        super().__init__(func, thread_sensitive=True)
+
+
+sync_to_async_threadsafe = SyncToAsyncThreadSafe
 
 
 def merge_configs(default, overwrite):

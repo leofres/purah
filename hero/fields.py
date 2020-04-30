@@ -6,8 +6,6 @@
 
 from functools import partial
 
-from asgiref.sync import sync_to_async
-
 import discord
 
 from django.db import router, signals, transaction
@@ -25,6 +23,7 @@ from django.utils.functional import cached_property
 
 from .i18n import Languages
 from .errors import InactiveUser
+from .utils import sync_to_async_threadsafe
 
 
 # Make calls to related fields async
@@ -39,7 +38,7 @@ class ReverseManyToOneDescriptor(_ReverseManyToOneDescriptor):
             related_model._default_manager.__class__,
             self.rel,
         )):
-            @sync_to_async
+            @sync_to_async_threadsafe
             def create(self, **kwargs):
                 self.sync_create(**kwargs)
 
@@ -49,7 +48,7 @@ class ReverseManyToOneDescriptor(_ReverseManyToOneDescriptor):
                 return super(RelatedManager, self.db_manager(db)).sync_create(**kwargs)
             sync_create.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def get_or_create(self, **kwargs):
                 self.sync_get_or_create(**kwargs)
 
@@ -59,7 +58,7 @@ class ReverseManyToOneDescriptor(_ReverseManyToOneDescriptor):
                 return super(RelatedManager, self.db_manager(db)).sync_get_or_create(**kwargs)
             sync_get_or_create.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def update_or_create(self, **kwargs):
                 return self.sync_update_or_create(**kwargs)
 
@@ -69,7 +68,7 @@ class ReverseManyToOneDescriptor(_ReverseManyToOneDescriptor):
                 return super(RelatedManager, self.db_manager(db)).sync_create(**kwargs)
             sync_update_or_create.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def clear(self, *, bulk=True):
                 self.sync_clear(bulk=bulk)
 
@@ -77,7 +76,7 @@ class ReverseManyToOneDescriptor(_ReverseManyToOneDescriptor):
                 self._clear(self, bulk)
             sync_clear.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def set(self, objs, *, bulk=True, clear=False):
                 return self.sync_set(objs, bulk=bulk, clear=clear)
 
@@ -104,7 +103,7 @@ class ReverseManyToOneDescriptor(_ReverseManyToOneDescriptor):
                     self.add(*objs, bulk=bulk)
             sync_set.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def remove(self, *args, **kwargs):
                 return self.sync_remove(*args, **kwargs)
 
@@ -112,7 +111,7 @@ class ReverseManyToOneDescriptor(_ReverseManyToOneDescriptor):
                 return super(RelatedManager, self).remove(*args, **kwargs)
             sync_remove.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def add(self, *args, **kwargs):
                 return self.sync_add(*args, **kwargs)
 
@@ -133,7 +132,7 @@ class ManyToManyDescriptor(_ManyToManyDescriptor):
             self.rel,
             reverse=self.reverse,
         )):
-            @sync_to_async
+            @sync_to_async_threadsafe
             def create(self, **kwargs):
                 self.sync_create(**kwargs)
 
@@ -144,7 +143,7 @@ class ManyToManyDescriptor(_ManyToManyDescriptor):
                 return new_obj
             sync_create.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def get_or_create(self, *, through_defaults=None, **kwargs):
                 self.sync_get_or_create(through_defaults=through_defaults, **kwargs)
 
@@ -158,7 +157,7 @@ class ManyToManyDescriptor(_ManyToManyDescriptor):
                 return obj, created
             sync_get_or_create.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def update_or_create(self, *, through_defaults=None, **kwargs):
                 return self.sync_update_or_create(through_defaults=through_defaults, **kwargs)
 
@@ -172,7 +171,7 @@ class ManyToManyDescriptor(_ManyToManyDescriptor):
                 return obj, created
             sync_update_or_create.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def clear(self):
                 self.sync_clear()
 
@@ -195,7 +194,7 @@ class ManyToManyDescriptor(_ManyToManyDescriptor):
                     )
             sync_clear.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def set(self, objs, *, clear=False, through_defaults=None):
                 return self.sync_set(objs, clear=clear, through_defaults=through_defaults)
 
@@ -227,7 +226,7 @@ class ManyToManyDescriptor(_ManyToManyDescriptor):
                         self.sync_add(*new_objs, through_defaults=through_defaults)
             sync_set.alters_data = True
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def remove(self, *args, **kwargs):
                 return self.sync_remove(*args, **kwargs)
 
@@ -275,7 +274,7 @@ class ManyToManyDescriptor(_ManyToManyDescriptor):
                         model=self.model, pk_set=old_ids, using=db,
                     )
 
-            @sync_to_async
+            @sync_to_async_threadsafe
             def add(self, *args, **kwargs):
                 return self.sync_add(*args, **kwargs)
 
@@ -520,7 +519,7 @@ class SeparatedValuesField(TextField):
     def to_python(self, value):
         if not value:
             return ''
-        if isinstance(value, list):
+        if isinstance(value, (tuple, list, set)):
             return value
         return value.split(';')
 
