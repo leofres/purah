@@ -28,6 +28,7 @@ class Database:
     async def load(self, discord_obj):
         if isinstance(discord_obj, tuple(self._model_map.keys())):
             cls = self._model_map[type(discord_obj)]
-            return cls.connect(discord_obj)
+            obj, existed_already = await cls.from_discord_obj(discord_obj)
+            return obj, existed_already
         else:
             raise TypeError("obj has to be an object from Discord")

@@ -463,16 +463,21 @@ class DiscordModel(Model):
     _discord_obj = None
     _discord_cls = None
 
+    @sync_to_async_threadsafe
     @classmethod
-    async def from_discord_obj(cls, discord_obj):
+    def from_discord_obj(cls, discord_obj):
         """Create a Hero object from a Discord object"""
         if not isinstance(discord_obj, cls.discord_cls):
             raise TypeError(f"discord_obj has to be a discord.{cls.discord_cls.__name__} "
                             f"but a {type(discord_obj).__name__} was passed")
         obj = cls(id=discord_obj.id)
         obj._discord_obj = discord_obj
-        await obj.load()
-        return obj
+        try:
+            obj.sync_load()
+            existed_already = True
+        except cls.DoesNotExist:
+            existed_already = False
+        return obj, existed_already
 
     @classmethod
     async def fetch(cls):
