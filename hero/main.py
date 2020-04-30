@@ -25,6 +25,8 @@ def main(test, **kwargs):
     os.environ['PROD'] = str(not test)
     os.environ.update({key: str(value) for key, value in kwargs.items() if value is not None})
 
+    # TODO custom prompt function based on click's that asks for config details that aren't given
+
     database_type = os.getenv('DB_TYPE')
     if database_type != 'sqlite':
         os.environ['DB_HOST'] = prompt("DB host", value_proc=str, default='localhost')

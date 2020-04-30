@@ -26,17 +26,17 @@ def load_correct_dotenv(ctx, param, is_test):
 
 @click.group(name='main', invoke_without_command=True)
 @click.option('-t/-p', '--test/--prod', callback=load_correct_dotenv, default=True)
-@click.option('--namespace', prompt="Namespace (optional)", show_default=False,
+@click.option('--namespace', show_default=False,
               default=lambda: os.getenv('NAMESPACE', 'default'))
 @click.option('--db-type', type=click.Choice(['sqlite', 'postgres', 'mysql'], case_sensitive=False),
-              prompt="DB backend", default=lambda: os.getenv('DB_TYPE', 'sqlite'))
+              default=lambda: os.getenv('DB_TYPE', 'sqlite'))
 @click.option('--db-name', default=lambda: os.getenv('DB_NAME'))
 @click.option('--db-user', default=lambda: os.getenv('DB_USER'))
 @click.option('--db-password', default=lambda: os.getenv('DB_PASSWORD'))
 @click.option('--db-host', default=lambda: os.getenv('DB_HOST'))
 @click.option('--db-port', default=lambda: os.getenv('DB_PORT'))
 @click.option('--cache-type', type=click.Choice(['simple', 'redis'], case_sensitive=False),
-              prompt="Cache backend", default=lambda: os.getenv('CACHE_TYPE', 'simple'))
+              default=lambda: os.getenv('CACHE_TYPE', 'simple'))
 @click.option('--cache-host', default=lambda: os.getenv('CACHE_HOST'))
 @click.option('--cache-port', default=lambda: os.getenv('CACHE_PORT'))
 @click.option('--cache-password', default=lambda: os.getenv('CACHE_PASSWORD'))
