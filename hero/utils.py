@@ -7,7 +7,6 @@ discord-hero: Discord Application Framework for humans
 """
 
 import asyncio
-import collections
 import copy
 import functools
 import re
@@ -119,7 +118,21 @@ class SyncToAsyncThreadSafe(SyncToAsync):
         super().__init__(func, thread_sensitive=True)
 
 
+sync_to_async = SyncToAsync
 sync_to_async_threadsafe = SyncToAsyncThreadSafe
+
+
+class AsyncUsingDB(SyncToAsyncThreadSafe):
+    pass
+
+
+async_using_db = AsyncUsingDB
+"""Decorate (synchronous) functions with this to turn them into async functions
+and enable database operations inside them; otherwise a SynchronousOnlyOperation
+exception would be raised by Django. Do NOT decorate an async function with this
+as that would be not only redundant but would also stop this decorator from
+working as intended.
+"""
 
 
 def merge_configs(default, overwrite):

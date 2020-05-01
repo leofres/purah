@@ -27,9 +27,9 @@ from .i18n import translate
 
 builtins._ = translate
 
-from asgiref.sync import async_to_sync, sync_to_async
 from discord.ext.commands import command, check, cooldown
 
+from .utils import async_using_db
 from .conf import Config, Extension
 from .db import Database
 from .cog import Cog
