@@ -1,0 +1,17 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+sphinx = "*"
+sphinxcontrib-trio = "*"
+pytest = "*"
+pytest-asyncio = "*"
+pytest-cov = "*"
+
+[packages]
+discord-hero = {editable = true, git = "https://github.com/monospacedmagic/discord-hero.git", extras = ['redis', 'postgresql']}
+
+[pipenv]
+allow_prereleases = true
