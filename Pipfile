@@ -11,7 +11,8 @@ pytest-asyncio = "*"
 pytest-cov = "*"
 
 [packages]
-discord-hero = {editable = true, git = "https://github.com/monospacedmagic/discord-hero.git", extras = ['redis', 'postgresql']}
+hero = {editable = true, path = "./discord-hero", extras = ['redis', 'postgresql']}
+achallonge = {editable = true, path = "./achallonge"}
 
 [pipenv]
 allow_prereleases = true
