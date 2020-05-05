@@ -3,6 +3,10 @@ from hero import fields, models
 from ..stages import DEFAULT_STARTER_STAGES, DEFAULT_COUNTERPICK_STAGES
 
 
+def get_default_emoji():
+    return models.Emoji(name='\u2705')  # white_check_mark
+
+
 # by inheriting from models.Guild we extend the Guild with
 # additional fields; this implicitly creates a OneToOne relationship
 # and joins the database tables for us
@@ -16,3 +20,5 @@ class GuildSetup(models.Guild):
     default_counterpick_stages = fields.SeparatedValuesField(default=DEFAULT_COUNTERPICK_STAGES)
     default_counterpick_bans = fields.SmallIntegerField(default=2)
     default_dsr = fields.BooleanField(default=True)
+    signup_emoji = fields.EmojiField(default=get_default_emoji)
+    checkin_emoji = fields.EmojiField(default=get_default_emoji)
