@@ -1,6 +1,6 @@
-from hero.models import Settings
-from hero.fields import NamespaceField
+from hero import fields, models
 
 
-class SsbuSettings(Settings):
-    pass
+class SsbuSettings(models.Settings):
+    challonge_username = fields.CharField(max_length=64)
+    challonge_api_key = fields.CharField(max_length=128)
