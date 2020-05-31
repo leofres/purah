@@ -1,5 +1,10 @@
 from discord.ext.commands import BadArgument
 
+from hero.utils import async_using_db, async_to_sync
+from hero import models
+
+from . import models as ssbu_models
+
 
 ALL_STAGES = {
     1: "Battlefield",
@@ -127,12 +132,12 @@ STAGE_LOOKUP.update(STAGE_ALIASES)
 
 # add lowercase and uppercase versions of stage names and aliases
 STAGE_LOOKUP.update({
-    key: value.upper() for key, value in STAGE_LOOKUP.items() if not value.isupper()
+    key.upper(): value for key, value in STAGE_LOOKUP.items() if not key.isupper()
 })
 
 
 STAGE_LOOKUP.update({
-    key: value.lower() for key, value in STAGE_LOOKUP.items() if not value.isupper() and not value.islower()
+    key.lower(): value for key, value in STAGE_LOOKUP.items() if not key.isupper() and not key.islower()
 })
 
 # A stage is legal if it is Tier 3 or better:
@@ -166,9 +171,7 @@ DEFAULT_STARTER_STAGES = [
 
 DEFAULT_COUNTERPICK_STAGES = [
     19,  # Yoshi's Story
-    37,  # Yoshi's Island
     39,  # Lylat Cruise
-    62,  # Unova Pokémon League
     79,  # Kalos Pokémon League
 ]
 
@@ -215,21 +218,43 @@ class Stage:
         except ValueError as ex:
             raise BadArgument(str(ex))
         except TypeError:
-            ssbu = ctx.bot.get_controller('ssbu')
-            await ssbu.get_stage(ctx, int(argument))
+            return await cls.get_stage_from_number(ctx, int(argument))
+
+    @classmethod
+    @async_using_db
+    def get_stage_from_number(cls, ctx, number):
+        """Gets the stage with that number given the context
+
+        Especially if stage striking is going on, this method
+        is helpful to figure out which stage is currently being
+        referred to. This is not needed and not called if the
+        stage is being referred to with its name or an alias.
+        """
+        # check if match channel, then get stagelist
+        channel = async_to_sync(models.TextChannel.from_discord_obj(ctx.channel))
+        try:
+            match = ssbu_models.Match.get(channel=channel)
+        except ssbu_models.Match.DoesNotExist:
+            return Stage(number)
+        # and get the stage from that (list index + 1),
+        starter_stages = match.tournament.ruleset.starter_stages
+        counterpick_stages = match.tournament.ruleset.counterpick_stages
+        stages = starter_stages + counterpick_stages
+        return Stage(stages[number - 1])
 
     @classmethod
     def parse(cls, argument):
         try:
             _id = int(argument)
+            # make this fail so we can handle stage numbers in strike commands and such
         except TypeError:
             argument = str(argument)
             try:
                 _id = STAGE_LOOKUP[argument]
             except KeyError:
-                raise ValueError('"{}" is not a valid fighter.'.format(argument))
+                raise ValueError('"{}" is not a valid stage.'.format(argument))
         else:
-            raise TypeError("Cannot parse Fighter from 'int'.")
+            raise TypeError("Cannot parse Stage from 'int'.")
         return Stage(_id)
 
     def __int__(self):

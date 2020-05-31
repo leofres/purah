@@ -113,12 +113,12 @@ FIGHTER_LOOKUP.update(FIGHTER_ALIASES)
 
 # add lowercase and uppercase versions of fighter names and aliases
 FIGHTER_LOOKUP.update({
-    key: value.upper() for key, value in FIGHTER_LOOKUP.items() if not value.isupper()
+    key.upper(): value for key, value in FIGHTER_LOOKUP.items() if not key.isupper()
 })
 
 
 FIGHTER_LOOKUP.update({
-    key: value.lower() for key, value in FIGHTER_LOOKUP.items() if not value.isupper() and not value.islower()
+    key.lower(): value for key, value in FIGHTER_LOOKUP.items() if not key.isupper() and not key.islower()
 })
 
 

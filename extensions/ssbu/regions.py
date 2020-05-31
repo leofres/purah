@@ -30,5 +30,5 @@ class RegionField(CharField):
             return Regions(value)
         except ValueError:
             raise ValueError(
-                "{region_value} is not a valid language".format(region_value=value)
+                "{region_value} is not a valid region".format(region_value=value)
             )

@@ -12,7 +12,8 @@ pytest-cov = "*"
 
 [packages]
 hero = {editable = true, path = "./discord-hero", extras = ['redis', 'postgresql']}
-achallonge = {editable = true, path = "./achallonge"}
+challonge = {editable = true, path = "./achallonge"}
+sortedcontainers = "*"
 
 [pipenv]
 allow_prereleases = true

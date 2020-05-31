@@ -6,7 +6,7 @@ from .tournament import Tournament
 
 class Match(models.Model):
     id = fields.BigIntegerField(primary_key=True)
-    channel = fields.TextChannelField(null=True, db_index=True, on_delete=fields.SET_NULL)
+    channel = fields.TextChannelField(null=True, db_index=True, unique=True, on_delete=fields.SET_NULL)
     guild = fields.GuildField(on_delete=fields.CASCADE)
     # if tournament is None, it's a matchmaking match
     tournament = fields.ForeignKey(Tournament, null=True, blank=True, on_delete=fields.CASCADE)

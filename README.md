@@ -19,4 +19,4 @@
 
 ## Documentation
 
-See [discord-hero](https://github.com/monospacedmagic/discord-hero).
+See [discord-hero](https://github.com/discord-hero/discord-hero).
