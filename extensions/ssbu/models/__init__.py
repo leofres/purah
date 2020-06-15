@@ -9,6 +9,7 @@ from .match_category import MatchCategory
 from .participant import Participant
 from .participant_team import ParticipantTeam
 from .player import Player
+from .ruleset import Ruleset
 from .settings import SsbuSettings
 from .team import Team
 from .tournament import Tournament

@@ -5,16 +5,18 @@ import aiohttp
 import challonge
 
 import discord
+from discord.utils import find, get
 from discord.ext import commands
 
 import hero
-from hero import async_using_db, models
+from hero import async_using_db, models, ObjectDoesNotExist
 from hero.utils import async_to_sync
 
 from .models import SsbuSettings
 from .stages import Stage
 from . import models as ssbu_models
 from ..scheduler import schedulable
+from .formats import Formats
 
 
 class SsbuController(hero.Controller):
@@ -35,22 +37,86 @@ class SsbuController(hero.Controller):
         return self.challonge_user
 
     @async_using_db
-    def save_participant_role(self, guild, role):
-        guild_setup: ssbu_models.GuildSetup = ssbu_models.GuildSetup.get(guild=guild)
+    def save_participant_role(self, guild: models.Guild, role: models.Role):
+        guild_setup: ssbu_models.GuildSetup = ssbu_models.GuildSetup.get(pk=guild)
         guild_setup.participant_role = role
         guild_setup.save()
 
     @async_using_db
-    def save_organizer_role(self, guild, role):
-        guild_setup: ssbu_models.GuildSetup = ssbu_models.GuildSetup.get(guild=guild)
+    def save_organizer_role(self, guild: models.Guild, role: models.Role):
+        guild_setup: ssbu_models.GuildSetup = ssbu_models.GuildSetup.get(pk=guild)
         guild_setup.organizer_role = role
         guild_setup.save()
 
     @async_using_db
-    def save_streamer_role(self, guild, role):
-        guild_setup: ssbu_models.GuildSetup = ssbu_models.GuildSetup.get(guild=guild)
+    def save_streamer_role(self, guild: models.Guild, role: models.Role):
+        guild_setup: ssbu_models.GuildSetup = ssbu_models.GuildSetup.get(pk=guild)
         guild_setup.streamer_role = role
         guild_setup.save()
+
+    @async_using_db
+    def is_any_organizer(self, guild: models.Guild, member: models.Member):
+        try:
+            guild_setup = ssbu_models.GuildSetup.get(pk=guild)
+        except ObjectDoesNotExist:
+            return False
+
+        main_organizer_role = guild_setup.main_series.organizer_role
+        if get(member.roles, id=main_organizer_role.id):
+            return True
+        qs = ssbu_models.TournamentSeries.objects.filter(guild=guild)
+        if find(lambda role: role.id in [series.organizer_role.id for series in qs], member.roles):
+            return True
+        qs = ssbu_models.Tournament.objects.filter(guild=guild, ended=False)
+        if find(lambda role: role.id in [tournament.organizer_role.id for tournament in qs], member.roles):
+            return True
+        return False
+
+    @async_using_db
+    def is_main_organizer(self, guild: models.Guild, member: models.Member):
+        try:
+            guild_setup = ssbu_models.GuildSetup.get(pk=guild)
+        except ObjectDoesNotExist:
+            return False
+
+        main_organizer_role = guild_setup.main_series.organizer_role
+        if get(member.roles, id=main_organizer_role.id):
+            return True
+        return False
+
+    @async_using_db
+    def is_organizer(self, channel: models.TextChannel, member: models.Member):
+        try:
+            guild_setup = ssbu_models.GuildSetup.get(pk=channel.guild)
+        except ObjectDoesNotExist:
+            return False
+
+        try:
+            tournament = ssbu_models.Tournament.objects.get(announcements_channel=channel, ended=False)
+        except ssbu_models.Tournament.MultipleObjectsReturned:
+            pass
+        else:
+            if get(member.roles, id=tournament.organizer_role):
+                return True
+
+        try:
+            tournament = ssbu_models.Tournament.objects.get(talk_channel=channel, ended=False)
+        except ssbu_models.Tournament.MultipleObjectsReturned:
+            pass
+        else:
+            if get(member.roles, id=tournament.organizer_role):
+                return True
+
+        return False
+
+    @async_using_db
+    def is_organizer_of_tournament(self, tournament, member: models.Member):
+        if isinstance(tournament, str):
+            tournament = ssbu_models.Tournament.get(key=tournament)
+
+        if get(member.roles, id=tournament.organizer_role.id):
+            return True
+        return False
 
     async def save_challonge_username(self, user: models.User, challonge_username):
         player = ssbu_models.Player.async_get(user=user)
@@ -231,13 +297,68 @@ class SsbuController(hero.Controller):
         pass
 
     @async_using_db
-    def get_setup(self, ctx: hero.Context, guild):
+    def setup_guild(self, guild: models.Guild, use_elo=True, main_series: ssbu_models.TournamentSeries = None):
+        guild_setup, created = ssbu_models.GuildSetup.get_or_create(pk=guild)
+        if created:
+            guild_setup.use_elo = use_elo
+            guild_setup.main_series = main_series
+            guild_setup.save()
+        if main_series.ruleset is None:
+            self.create_default_ruleset.sync(guild)
+        return guild_setup, not created
+
+    @async_using_db
+    def create_default_ruleset(self, guild: models.Guild):
+        guild_setup = self.get_setup.sync(guild)
+        main_series = guild_setup.main_series
+        default_ruleset = ssbu_models.Ruleset.create(name=f"{main_series.name} Rules", guild=guild)
+        main_series.ruleset = default_ruleset
+        main_series.save()
+        return default_ruleset
+
+    @async_using_db
+    def get_setup(self, guild: models.Guild):
         try:
             guild_setup = ssbu_models.GuildSetup.get(guild=guild)
         except ssbu_models.GuildSetup.DoesNotExist:
             raise ssbu_models.GuildSetup.DoesNotExist(f"**{guild.name}** has not been set up yet; "
-                                                      f"use `{ctx.prefix}to setup`.")
+                                                      f"use `{self.core.default_prefix}to setup`.")
         return guild_setup
+
+    @async_using_db
+    def get_ruleset(self, tournament_series: ssbu_models.TournamentSeries):
+        ruleset = tournament_series.ruleset
+        if ruleset is None:
+            guild_setup = self.get_setup.sync(tournament_series.guild)
+            ruleset = guild_setup.default_ruleset
+            if ruleset is None:
+                ruleset = self.create_default_ruleset.sync(tournament_series.guild)
+        return ruleset
+
+    @async_using_db
+    def create_tournament_series(self, key: str, guild: models.Guild, doubles: bool, name: str,
+                                 participant_role: models.Role, organizer_role: models.Role,
+                                 announcements_channel: models.TextChannel, admin: ssbu_models.Player = None,
+                                 streamer_role: models.Role = None, talk_channel: models.TextChannel = None,
+                                 signup_emoji: models.Emoji = None, checkin_emoji: models.Emoji = None,
+                                 participants_limit: int = None, _format: Formats = Formats.double_elimination,
+                                 allow_matches_in_dms: bool = False, ruleset: ssbu_models.Ruleset = None):
+        tournament_series = ssbu_models.TournamentSeries(
+            key=key, guild=guild, doubles=doubles, name=name, participant_role=participant_role,
+            organizer_role=organizer_role, announcements_channel=announcements_channel,
+            streamer_role=streamer_role, talk_channel=talk_channel, format=_format,
+            allow_matches_in_dms=allow_matches_in_dms, ruleset=ruleset
+        )
+        if signup_emoji is not None:
+            tournament_series.signup_emoji = signup_emoji
+        if checkin_emoji is not None:
+            tournament_series.checkin_emoji = checkin_emoji
+        if participants_limit is not None:
+            tournament_series.default_participants_limit = participants_limit
+        tournament_series.save()
+        if admin is not None:
+            tournament_series.admins.add(admin)
+        return tournament_series
 
     async def create_tournament(self, name, key, tournament_type, signup_cap, private, start_at, description, admin):
         tournament = await self.challonge_user.create_tournament(name=name, url=key,

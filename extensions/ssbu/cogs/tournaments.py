@@ -103,29 +103,33 @@ class Tournaments(hero.Cog):
         """Set up your server so tournaments can be hosted on it"""
         # TODO interactive server setup
         # it automatically uses defaults for the most part for now
-        guild: discord.Guild = await self.db.load(ctx.guild)
-        await ctx.send("Enter a name for your tournament series (will be the prefix for tournament names):")
-        response = await self.core.wait_for_response(ctx, timeout=600)
-        tournament_series_name = response.content
-        guild_setup = ssbu_models.GuildSetup(guild=guild)
-        tournament_series = ssbu_models.TournamentSeries(guild=guild)
+        guild = await self.db.wrap_guild(ctx.guild)
+        await ctx.send("Enter a name for your main tournament series (will be the prefix for tournament names):")
+        tournament_series_name = await self.core.wait_for_response(ctx, timeout=600)
+        await ctx.send("Enter a key for your main tournament series (will be the prefix for tournament URLs) "
+                       "(letters, numbers and underscores only):")
+        tournament_series_key = await self.core.wait_for_response(ctx, timeout=600)
 
         participant_role = await guild.create_role(reason=f"Participant role is needed for "
                                                           f"{tournament_series_name} tournaments",
                                                    name=f"{tournament_series_name} Participants")
+        participant_role = await self.db.wrap_role(participant_role)
         organizer_role = await guild.create_role(reason=f"Organizer role is needed for "
                                                         f"{tournament_series_name} tournaments",
                                                  name=f"{tournament_series_name} Organizers")
+        organizer_role = await self.db.wrap_role(organizer_role)
         streamer_role = await guild.create_role(reason=f"Streamer role is useful for "
                                                        f"{tournament_series_name} tournaments,"
                                                        f"can be deleted if not needed",
                                                 name=f"{tournament_series_name} Streamers")
+        streamer_role = await self.db.wrap_role(streamer_role)
 
-        guild_setup.participant_role = participant_role
-        guild_setup.organizer_role = organizer_role
-        guild_setup.streamer_role = streamer_role
+        main_series = await self.ctl.create_tournament_series(key=tournament_series_key, name=tournament_series_name,
+                                                              participant_role=participant_role,
+                                                              organizer_role=organizer_role,
+                                                              streamer_role=streamer_role)
 
-        await guild_setup.async_save()
+        await self.ctl.setup_guild(guild=guild, main_series=main_series)
         await ctx.send(f"Your server is now set up to use the tournament features! "
                        f"Check the Audit Log for details. Assign yourself the "
                        f"Tournament Organizer role I just created, and check out the "
@@ -165,31 +169,31 @@ class Tournaments(hero.Cog):
         await ctx.send("Streamer role set.")
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_set_ruleset(self, ctx: hero.Context):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_editruleset(self, ctx: hero.Context):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_toggleelo(self, ctx: hero.Context):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_set_signupemoji(self, ctx: hero.Context, emoji: models.Emoji):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_set_checkinemoji(self, ctx: hero.Context, emoji: models.Emoji):
         # TODO
         pass
@@ -201,7 +205,7 @@ class Tournaments(hero.Cog):
         await ctx.send("Username set.")
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_create(self, ctx: hero.Context):
         if self.ctl.challonge_user is None:
             await ctx.send("I am currently not connected to Challonge, this is hopefully being fixed right now."
@@ -209,13 +213,13 @@ class Tournaments(hero.Cog):
                            "support server (`{prefix}support`) and get in touch with staff.")
             return
 
-        guild = await self.db.load(ctx.guild)
-        guild_setup = await self.ctl.get_setup(ctx, guild)
+        guild = await self.db.wrap_guild(ctx.guild)
+        guild_setup = await self.ctl.get_setup(guild)
 
         await ctx.send("Should this tournament be part of a tournament series? (yes/no)")
         confirmation = await self.core.wait_for_confirmation(ctx, timeout=600)
         if confirmation:
-            await ctx.send("Please enter the name of the tournament series (case-sensitive):")
+            await ctx.send("Please enter the key of the tournament series:")
             response = await self.core.wait_for_response(ctx, timeout=600)
             tournament_series_name = response.content
 
@@ -324,55 +328,55 @@ class Tournaments(hero.Cog):
                 await tournament_series.async_save()
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_checkreactions(self, ctx: hero.Context):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_signup(self, ctx: hero.Context, channel: models.TextChannel, member: models.Member):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_startcheckin(self, ctx: hero.Context, channel: models.TextChannel):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_start(self, ctx: hero.Context, channel: models.TextChannel):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_startmatch(self, ctx: hero.Context):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_end(self, ctx: hero.Context, channel: models.TextChannel):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_setwinner(self, ctx: hero.Context, participant: ssbu_models.Participant):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_setbo3(self, ctx: hero.Context, channel: models.TextChannel):
         # TODO
         pass
 
     @hero.command()
-    @ssbu_checks.to_only()
+    @ssbu_checks.main_to_only()
     async def to_setbo5(self, ctx: hero.Context, channel: models.TextChannel):
         # TODO
         pass
