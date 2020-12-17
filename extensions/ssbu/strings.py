@@ -4,11 +4,10 @@ signup_message = """\
 The tournament starts {start_time}. The start time in your timezone, the bracket and \
 other information can be found on the tournament's Challonge page: <{full_challonge_url}>
 
-**To sign up for the tournament, simply click the \U00002705 below. \
+**To sign up for the tournament, simply click the {signup_emoji} below. \
 You will have to check in before the tournament starts; check-in will start \
 30 minutes before the tournament does.** Check-in will be as easy as signing up. \
-You will also be pinged when check-in begins if you signed up; this ping will \
-bypass your notification settings for this server.
+You will also be role-pinged when check-in begins if you signed up.
 
 __**Stagelist**__
 
@@ -19,6 +18,9 @@ __**Stagelist**__
 **Counterpick Stages**
 
 {counterpick_stages_list}
+
+Counterpick Bans: {counterpick_bans}
+DSR: {dsr_on_off}
 
 To prepare for the tournament, set up a ruleset according to these \
 instructions: <https://imgur.com/a/yH7r5zJ>
@@ -30,8 +32,8 @@ doubles_signup_message = """\
 The tournament starts {start_time}. The bracket and other information \
 can be found on the tournament's Challonge page: <{full_challonge_url}>
 
-**To sign up for the tournament, simply use `.teamup @user` to team up with \
-someone else, then click the \U00002705 below. \
+**To sign up for the tournament, simply use `{prefix}teamup @user` to team up with \
+someone else, then click the {signup_emoji} below. \
 You will have to check in before the tournament starts; check-in will start \
 30 minutes before the tournament does.** Check-in will be as easy as signing up. \
 You will also be pinged when check-in begins if you signed up; this ping will \
@@ -46,6 +48,9 @@ __**Stagelist**__
 **Counterpick Stages**
 
 {counterpick_stages_list}
+
+Counterpick Bans: {counterpick_bans}
+DSR: {dsr_on_off}
 
 To prepare for the tournament, set up a ruleset according to these \
 instructions: <https://imgur.com/a/yH7r5zJ>
@@ -59,15 +64,28 @@ To join the tournament, visit our Discord server \
 and click on the check mark. The rest is explained on Discord. \
 We're using a new system we built to innovate tournament management. \
 We hope you'll like it!
+
+__**Stagelist**__
+
+**Starter Stages**
+
+{starter_stages_list}
+
+**Counterpick Stages**
+
+{counterpick_stages_list}
+
+Counterpick Bans: {counterpick_bans}
+DSR: {dsr_on_off}
 """
 
 checkin_message = """\
-{role.mention} Check-in has begun! Click the \U00002705 if you're ready \
+{role.mention} Check-in has begun! Click the {checkin_emoji} if you're ready \
 to participate in the tournament that starts in 30 minutes!
 """
 
 doubles_checkin_message = """\
-{role.mention} Check-in has begun! Click the \U00002705 if you're ready \
+{role.mention} Check-in has begun! Click the {checkin_emoji} if you're ready \
 to participate in the tournament that starts in 30 minutes! \
 **Both team members have to check in for the team to be able to \
 enter the tournament!**
@@ -75,8 +93,8 @@ enter the tournament!**
 
 teamup_request = """\
 {partner.mention}, {author.mention} would like to team up with you \
-for doubles tournaments! Click the \U00002705 to accept, \
-or the \U0000274E to reject.
+for doubles tournaments! Click the \u2705 to accept, \
+or the \u274E to reject.
 """
 
 tournament_start = """The tournament has started! Please wait while I create \

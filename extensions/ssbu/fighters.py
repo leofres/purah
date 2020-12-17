@@ -82,6 +82,7 @@ ALL_FIGHTERS = {
     78: "Banjo & Kazooie",
     79: "Terry",
     80: "Byleth",
+    81: "Min Min",
 }
 
 

@@ -1,3 +1,14 @@
+from hero import models, start_all, end_all
+
+start_all(globals())
+
+
+def get_default_emoji():
+    emoji = models.Emoji(name='\u2705', is_custom=False)  # white_check_mark
+    emoji.save()
+    return emoji
+
+
 from .doubles_game import DoublesGame
 from .doubles_match import DoublesMatch
 from .game import Game
@@ -6,6 +17,9 @@ from .guild_setup import GuildSetup
 from .guild_team import GuildTeam
 from .match import Match
 from .match_category import MatchCategory
+from .match_offer import MatchOffer
+from .match_search import MatchSearch
+from .matchmaking_setup import MatchmakingSetup
 from .participant import Participant
 from .participant_team import ParticipantTeam
 from .player import Player
@@ -14,6 +28,9 @@ from .settings import SsbuSettings
 from .team import Team
 from .tournament import Tournament
 from .tournament_series import TournamentSeries
+
+
+end_all(globals())
 
 
 # original JSON-based data structure from Purah V1
@@ -140,4 +157,35 @@ old_data_structure = {
         'needs_confirmation_by_user_id': None,
         'winner_confirmed': False
     }
+}
+
+
+# Matchmaking old data structure
+default_guild = {
+    "category_id": None,  # Category for match channels
+    "ingame_role_id": None,  # Role of members who are in an ongoing match
+    "setups": [],  # channel IDs
+    "looking_members": {},  # {message_id: user_id}
+    "offering_members": {}  # {message_id: {"offered_to_id", "offering_id"}}
+}
+default_member = {
+    "requests": {},  # {channel_id: message_id}
+    "offers": []  # [{"channel_id", "message_id"}]
+}
+default_channel = {
+    "message_id": None,  # the message used to manage the match / for matchmaking
+    # Match channels
+    "is_match": False,  # if the channel is a match channel
+    "match_partners": (None, None),  # (requesting, offering) (user IDs)
+    "is_spectatable": False,  # whether or not spectators are allowed to join
+    "spectators": {},  # {join_message_id: user_id}
+    "kicked_spectators": [],  # user IDs
+    "origin_channel_id": None,  # where the match was started from
+    "from_matchmaking": False,  # whether or not the match was started via matchmaking
+    "spectating_message_id": None,  # message that allows others to spectate the match
+    "voice_channel_id": None,  # the match's voice channel
+    # Matchmaking channels
+    "looking_role_id": None,  # Role of members who are looking for opponents
+    "available_role_id": None,  # Role of members who are potentially available
+    "spectatable_matches": {}  # {message_id: channel_id}
 }

@@ -1,3 +1,4 @@
+from discord import PartialEmoji
 from discord.ext.commands import BadArgument
 
 from hero.utils import async_using_db, async_to_sync
@@ -8,122 +9,144 @@ from . import models as ssbu_models
 
 ALL_STAGES = {
     1: "Battlefield",
-    2: "Big Battlefield",
-    3: "Final Destination",
-    4: "Peach's Castle",
-    5: "Kongo Jungle",
-    6: "Hyrule Castle",
-    7: "Super Happy Tree",
-    8: "Dream Land",
-    9: "Saffron City",
-    10: "Mushroom Kingdom",
-    11: "Princess Peach's Castle",
-    12: "Rainbow Cruise",
-    13: "Kongo Falls",
-    14: "Jungle Japes",
-    15: "Great Bay",
-    16: "Temple",
-    17: "Brinstar",
-    18: "Yoshi's Island (Melee)",
-    19: "Yoshi's Story",
-    20: "Fountain of Dreams",
-    21: "Green Greens",
-    22: "Corneria",
-    23: "Venom",
-    24: "Pokémon Stadium",
-    25: "Onett",
-    26: "Mushroom Kingdom II",
-    27: "Brinstar Depths",
-    28: "Big Blue",
-    29: "Fourside",
-    30: "Delfino Plaza",
-    31: "Mushroomy Kingdom",
-    32: "Figure-8 Circuit",
-    33: "WarioWare, Inc.",
-    34: "Bridge of Eldin",
-    35: "Norfair",
-    36: "Frigate Orpheon",
-    37: "Yoshi's Island",
-    38: "Halberd",
-    39: "Lylat Cruise",
-    40: "Pokémon Stadium 2",
-    41: "Port Town Aero Dive",
-    42: "Castle Siege",
-    43: "Distant Planet",
-    44: "Smashville",
-    45: "New Pork City",
-    46: "Summit",
-    47: "Skyworld",
-    48: "Shadow Moses Island",
-    49: "Luigi's Mansion",
-    50: "Pirate Ship",
-    51: "Spear Pillar",
-    52: "75m",
-    53: "Mario Bros.",
-    54: "Hanenbow",
-    55: "Green Hill Zone",
-    56: "3D Land",
-    57: "Golden Plains",
-    58: "Paper Mario",
-    59: "Gerudo Valley",
-    60: "Spirit Train",
-    61: "Dream Land GB",
-    62: "Unova Pokémon League",
-    63: "Prism Tower",
-    64: "Mute City SNES",
-    65: "Magicant",
-    66: "Arena Ferox",
-    67: "Reset Bomb Forest",
-    68: "Tortimer Island",
-    69: "Balloon Fight",
-    70: "Living Room",
-    71: "Find Mii",
-    72: "Tomodachi Life",
-    73: "PictoChat 2",
-    74: "Mushroom Kingdom U",
-    75: "Mario Galaxy",
-    76: "Mario Circuit",
-    77: "Skyloft",
-    78: "The Great Cave Offensive",
-    79: "Kalos Pokémon League",
-    80: "Coliseum",
-    81: "Flat Zone X",
-    82: "Palutena's Temple",
-    83: "Gamer",
-    84: "Garden of Hope",
-    85: "Town and City",
-    86: "Wii Fit Studio",
-    87: "Boxing Ring",
-    88: "Gaur Plain",
-    89: "Duck Hunt",
-    90: "Wrecking Crew",
-    91: "Pilotwings",
-    92: "Wuhu Island",
-    93: "Windy Hill Zone",
-    94: "Wily Castle",
-    95: "Pac-Land",
-    96: "Super Mario Maker",
-    97: "Suzaku Castle",
-    98: "Midgar",
-    99: "Umbra Clock Tower",
-    100: "New Donk City Hall",
-    101: "Great Plateau Tower",
-    102: "Moray Towers",
-    103: "Dracula's Castle",
-    104: "Mementos",
-    105: "Yggdrasil's Altar",
-    106: "Spiral Mountain",
-    107: "King of Fighters Stadium",
-    108: "Garreg Mach Monastery",
+    2: "Small Battlefield",
+    3: "Big Battlefield",
+    4: "Final Destination",
+    5: "Peach's Castle",
+    6: "Kongo Jungle",
+    7: "Hyrule Castle",
+    8: "Super Happy Tree",
+    9: "Dream Land",
+    10: "Saffron City",
+    11: "Mushroom Kingdom",
+    12: "Princess Peach's Castle",
+    13: "Rainbow Cruise",
+    14: "Kongo Falls",
+    15: "Jungle Japes",
+    16: "Great Bay",
+    17: "Temple",
+    18: "Brinstar",
+    19: "Yoshi's Island (Melee)",
+    20: "Yoshi's Story",
+    21: "Fountain of Dreams",
+    22: "Green Greens",
+    23: "Corneria",
+    24: "Venom",
+    25: "Pokémon Stadium",
+    26: "Onett",
+    27: "Mushroom Kingdom II",
+    28: "Brinstar Depths",
+    29: "Big Blue",
+    30: "Fourside",
+    31: "Delfino Plaza",
+    32: "Mushroomy Kingdom",
+    33: "Figure-8 Circuit",
+    34: "WarioWare, Inc.",
+    35: "Bridge of Eldin",
+    36: "Norfair",
+    37: "Frigate Orpheon",
+    38: "Yoshi's Island",
+    39: "Halberd",
+    40: "Lylat Cruise",
+    41: "Pokémon Stadium 2",
+    42: "Port Town Aero Dive",
+    43: "Castle Siege",
+    44: "Distant Planet",
+    45: "Smashville",
+    46: "New Pork City",
+    47: "Summit",
+    48: "Skyworld",
+    49: "Shadow Moses Island",
+    50: "Luigi's Mansion",
+    51: "Pirate Ship",
+    52: "Spear Pillar",
+    53: "75m",
+    54: "Mario Bros.",
+    55: "Hanenbow",
+    56: "Green Hill Zone",
+    57: "3D Land",
+    58: "Golden Plains",
+    59: "Paper Mario",
+    60: "Gerudo Valley",
+    61: "Spirit Train",
+    62: "Dream Land GB",
+    63: "Unova Pokémon League",
+    64: "Prism Tower",
+    65: "Mute City SNES",
+    66: "Magicant",
+    67: "Arena Ferox",
+    68: "Reset Bomb Forest",
+    69: "Tortimer Island",
+    70: "Balloon Fight",
+    71: "Living Room",
+    72: "Find Mii",
+    73: "Tomodachi Life",
+    74: "PictoChat 2",
+    75: "Mushroom Kingdom U",
+    76: "Mario Galaxy",
+    77: "Mario Circuit",
+    78: "Skyloft",
+    79: "The Great Cave Offensive",
+    80: "Kalos Pokémon League",
+    81: "Coliseum",
+    82: "Flat Zone X",
+    83: "Palutena's Temple",
+    84: "Gamer",
+    85: "Garden of Hope",
+    86: "Town and City",
+    87: "Wii Fit Studio",
+    88: "Boxing Ring",
+    89: "Gaur Plain",
+    90: "Duck Hunt",
+    91: "Wrecking Crew",
+    92: "Pilotwings",
+    93: "Wuhu Island",
+    94: "Windy Hill Zone",
+    95: "Wily Castle",
+    96: "Pac-Land",
+    97: "Super Mario Maker",
+    98: "Suzaku Castle",
+    99: "Midgar",
+    100: "Umbra Clock Tower",
+    101: "New Donk City Hall",
+    102: "Great Plateau Tower",
+    103: "Moray Towers",
+    104: "Dracula's Castle",
+    105: "Mementos",
+    106: "Yggdrasil's Altar",
+    107: "Spiral Mountain",
+    108: "King of Fighters Stadium",
+    109: "Garreg Mach Monastery",
+    110: "Spring Stadium",
+    111: "Minecraft World",
 }
+
+
+
 
 
 STAGE_LOOKUP = {value: key for key, value in ALL_STAGES.items()}
 
 
 STAGE_ALIASES = {
-    'bf': 1,
-    'fd': 3,
+    'BF': 1,
+    'SBF': 2,
+    'Small BF': 2,
+    'SmallBF': 2,
+    'FD': 4,
+    'Final': 4,
+    'Omega': 4,
+    'YS': 20,
+    'Story': 20,
+    'Lylat': 40,
+    'PS2': 41,
+    'Stadium': 41,
+    'SV': 45,
+    'Ville': 45,
+    'Kalos': 80,
+    'TaC': 86,
+    'T&C': 86,
+    'Town': 86,
     # TODO
 }
 
@@ -137,42 +160,43 @@ STAGE_LOOKUP.update({
 
 
 STAGE_LOOKUP.update({
-    key.lower(): value for key, value in STAGE_LOOKUP.items() if not key.isupper() and not key.islower()
+    key.lower(): value for key, value in STAGE_LOOKUP.items() if not key.islower()
 })
 
 # A stage is legal if it is Tier 3 or better:
 # https://www.ssbwiki.com/Stage_legality#Stage_legality_in_Super_Smash_Bros._Ultimate
 LEGAL_STAGES = [
     1,  # Battlefield
-    3,  # Final Destination
-    19,  # Yoshi's Story
-    24,  # Pokémon Stadium
-    33,  # WarioWare, Inc.
-    37,  # Yoshi's Island
-    39,  # Lylat Cruise
-    40,  # Pokémon Stadium 2
-    44,  # Smashville
-    62,  # Unova Pokémon League
-    77,  # Skyloft
-    79,  # Kalos Pokémon League
-    85,  # Town and City
-    105,  # Yggdrasil's Altar
+    2,  # Small Battlefield
+    4,  # Final Destination
+    20,  # Yoshi's Story
+    25,  # Pokémon Stadium
+    34,  # WarioWare, Inc.
+    38,  # Yoshi's Island
+    40,  # Lylat Cruise
+    41,  # Pokémon Stadium 2
+    45,  # Smashville
+    63,  # Unova Pokémon League
+    78,  # Skyloft
+    80,  # Kalos Pokémon League
+    86,  # Town and City
+    106,  # Yggdrasil's Altar
 ]
 
 
 DEFAULT_STARTER_STAGES = [
     1,  # Battlefield
-    3,  # Final Destination
-    40,  # Pokémon Stadium 2
-    44,  # Smashville
-    85,  # Town and City
+    4,  # Final Destination
+    41,  # Pokémon Stadium 2
+    45,  # Smashville
+    86,  # Town and City
 ]
 
 
 DEFAULT_COUNTERPICK_STAGES = [
+    2,  # Small Battlefield
     19,  # Yoshi's Story
-    39,  # Lylat Cruise
-    79,  # Kalos Pokémon League
+    80,  # Kalos Pokémon League
 ]
 
 
@@ -197,6 +221,9 @@ def generate_banned_forms_list():
     return '\n'.join(_tmp)
 
 
+
+
+
 class Stage:
     def __init__(self, _id):
         if _id not in ALL_STAGES:
@@ -216,6 +243,7 @@ class Stage:
         try:
             return cls.parse(argument)
         except ValueError as ex:
+            print(f"Invalid stage: {argument}")
             raise BadArgument(str(ex))
         except TypeError:
             return await cls.get_stage_from_number(ctx, int(argument))
@@ -247,7 +275,9 @@ class Stage:
         try:
             _id = int(argument)
             # make this fail so we can handle stage numbers in strike commands and such
-        except TypeError:
+        except ValueError:
+            print(f"Actually parsing {argument}")
+            print(list(STAGE_LOOKUP.keys()))
             argument = str(argument)
             try:
                 _id = STAGE_LOOKUP[argument]
@@ -256,6 +286,18 @@ class Stage:
         else:
             raise TypeError("Cannot parse Stage from 'int'.")
         return Stage(_id)
+
+    @classmethod
+    def serialize(cls, stage):
+        return str(int(stage))
+
+    @classmethod
+    def get_default_starters(cls):
+        return [cls(stage_id) for stage_id in DEFAULT_STARTER_STAGES]
+
+    @classmethod
+    def get_default_counterpicks(cls):
+        return [cls(stage_id) for stage_id in DEFAULT_COUNTERPICK_STAGES]
 
     def __int__(self):
         return self.id

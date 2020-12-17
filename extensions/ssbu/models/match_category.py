@@ -1,8 +1,6 @@
 from hero import models, fields
 
 
-class MatchCategory(models.CategoryChannel):
-    class Meta:
-        unique_together = (('guild', 'number'),)
-
-    number = fields.SmallIntegerField(db_index=True)
+class MatchCategory(models.Model):
+    category = fields.OneToOneField(models.CategoryChannel, primary_key=True, on_delete=fields.CASCADE)
+    number = fields.SmallIntegerField()

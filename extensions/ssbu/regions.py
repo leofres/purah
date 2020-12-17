@@ -17,13 +17,19 @@ class RegionField(CharField):
         kwargs['max_length'] = 2
         super().__init__(**kwargs)
 
-    def get_prep_value(self, value: Regions) -> str:
+    def get_prep_value(self, value: Regions):
+        if value is None:
+            return None
         return value.value
 
     def from_db_value(self, value, expression, connection):
+        if value is None:
+            return None
         return Regions(value)
 
-    def to_python(self, value: str) -> Regions:
+    def to_python(self, value: str):
+        if value is None:
+            return None
         if isinstance(value, Regions):
             return value
         try:

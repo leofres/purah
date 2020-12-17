@@ -3,7 +3,8 @@ from hero import fields, models
 from .tournament import Tournament
 
 
-class Participant(models.Member):
+class Participant(models.Model):
+    member = fields.OneToOneField(models.Member, primary_key=True, on_delete=fields.CASCADE)
     challonge_id = fields.IntegerField(db_index=True)
     tournament = fields.ForeignKey(Tournament, db_index=True, on_delete=fields.CASCADE)
     current_match = fields.ForeignKey('Match', null=True, blank=True, on_delete=fields.SET_NULL)

@@ -1,9 +1,21 @@
-from challonge import TournamentType as Formats
+from enum import Enum
 
-from hero.fields import CharField
+from hero import fields
 
 
-class FormatField(CharField):
+class Formats(Enum):
+    single_elimination = 'single elimination'
+    double_elimination = 'double elimination'
+    round_robin = 'round robin'
+    swiss = 'swiss'
+
+    @classmethod
+    async def convert(cls, ctx, argument):
+        # may need to be converted to a challonge.TournamentType afterwards
+        return Formats(argument)
+
+
+class FormatField(fields.CharField):
     def __init__(self, **kwargs):
         kwargs['max_length'] = 32
         super().__init__(**kwargs)
@@ -21,5 +33,6 @@ class FormatField(CharField):
             return Formats(value)
         except ValueError:
             raise ValueError(
-                "{region_value} is not a valid region".format(region_value=value)
+                "{format_value} is not a valid format".format(format_value=value)
             )
+
