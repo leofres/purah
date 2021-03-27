@@ -15,8 +15,8 @@ class Tournament(models.Model):
     ranked = fields.BooleanField()
     signup_message = fields.MessageField(unique=True, db_index=True, null=True, on_delete=fields.SET_NULL)
     checkin_message = fields.MessageField(unique=True, db_index=True, null=True, blank=True, on_delete=fields.SET_NULL)
-    signup_emoji = fields.EmojiField(default=get_default_emoji, on_delete=fields.SET_DEFAULT)
-    checkin_emoji = fields.EmojiField(default=get_default_emoji, on_delete=fields.SET_DEFAULT)
+    # signup_emoji = fields.EmojiField(default=get_default_emoji, on_delete=fields.SET_DEFAULT)
+    # checkin_emoji = fields.EmojiField(default=get_default_emoji, on_delete=fields.SET_DEFAULT)
     guild = fields.GuildField(db_index=True, on_delete=fields.CASCADE)
     announcements_channel = fields.TextChannelField(null=True, on_delete=fields.SET_NULL)
     talk_channel = fields.TextChannelField(null=True, blank=True, on_delete=fields.SET_NULL)
@@ -26,7 +26,10 @@ class Tournament(models.Model):
     doubles = fields.BooleanField(db_index=True)
     format = FormatField(default=Formats.double_elimination)
     allow_matches_in_dms = fields.BooleanField()
-    ruleset = fields.ForeignKey(Ruleset, on_delete=fields.SET_DEFAULT)
+    # don't hard delete rulesets that have already been used
+    # instead, the ruleset should be swapped out with the updated version
+    # and only for upcoming and ongoing tournaments
+    ruleset = fields.ForeignKey(Ruleset, on_delete=fields.PROTECT)
     start_time = fields.DateTimeField(db_index=True)
     delay_start = fields.SmallIntegerField(null=True, blank=True)  # minutes
     start_task = fields.ForeignKey(ScheduledTask, null=True, on_delete=fields.SET_NULL)

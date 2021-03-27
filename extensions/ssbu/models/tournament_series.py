@@ -26,8 +26,8 @@ class TournamentSeries(models.Model):
     participant_role = fields.RoleField(null=True, unique=True, on_delete=fields.SET_NULL)  # cancel tournament creation if not found on Discord
     organizer_role = fields.RoleField(null=True, on_delete=fields.SET_NULL)  # cancel tournament creation if not found on Discord
     streamer_role = fields.RoleField(null=True, blank=True, on_delete=fields.SET_NULL)  # delete if not found on Discord
-    signup_emoji = fields.EmojiField(default=get_default_emoji, on_delete=fields.SET_DEFAULT)
-    checkin_emoji = fields.EmojiField(default=get_default_emoji, on_delete=fields.SET_DEFAULT)
+    # signup_emoji = fields.EmojiField(default=get_default_emoji, on_delete=fields.SET_DEFAULT)
+    # checkin_emoji = fields.EmojiField(default=get_default_emoji, on_delete=fields.SET_DEFAULT)
     announcements_channel = fields.TextChannelField(null=True, on_delete=fields.SET_NULL)  # if None, cancel tournament creation
     talk_channel = fields.TextChannelField(null=True, blank=True, on_delete=fields.SET_NULL)
     introduction = fields.TextField(max_length=2048)

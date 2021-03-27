@@ -119,10 +119,28 @@ ALL_STAGES = {
     109: "Garreg Mach Monastery",
     110: "Spring Stadium",
     111: "Minecraft World",
+    112: "Northern Cave",
 }
 
 
-
+STAGE_EMOJIS = {
+    1: PartialEmoji(name='bf', id=792044219430338580),
+    2: PartialEmoji(name='smallbf', id=792044218306002964),
+    4: PartialEmoji(name='fd', id=792044218360266782),
+    20: PartialEmoji(name='ys', id=792044219509899284),
+    25: PartialEmoji(name='ps', id=792044219505967134),
+    34: PartialEmoji(name='ww', id=792044218495270962),
+    38: PartialEmoji(name='yi', id=792044219996176404),
+    40: PartialEmoji(name='lylat', id=792044218084098049),
+    41: PartialEmoji(name='ps2', id=792044219460091954),
+    45: PartialEmoji(name='sv', id=792044219232419901),
+    63: PartialEmoji(name='unova', id=792044219610169354),
+    78: PartialEmoji(name='skyloft', id=792044219647918140),
+    80: PartialEmoji(name='kalos', id=792044219622621234),
+    86: PartialEmoji(name='tac', id=792044219454980116),
+    106: PartialEmoji(name='ya', id=792044218482425876),
+    112: PartialEmoji(name='nc', id=792044218977222706),
+}
 
 
 STAGE_LOOKUP = {value: key for key, value in ALL_STAGES.items()}
@@ -146,7 +164,10 @@ STAGE_ALIASES = {
     'Kalos': 80,
     'TaC': 86,
     'T&C': 86,
+    'TnC': 86,
     'Town': 86,
+    'NC': 112,
+    'Cave': 112,
     # TODO
 }
 
@@ -181,6 +202,7 @@ LEGAL_STAGES = [
     80,  # Kalos Pokémon League
     86,  # Town and City
     106,  # Yggdrasil's Altar
+    112,  # Northern Cave
 ]
 
 
@@ -195,24 +217,24 @@ DEFAULT_STARTER_STAGES = [
 
 DEFAULT_COUNTERPICK_STAGES = [
     2,  # Small Battlefield
-    19,  # Yoshi's Story
+    20,  # Yoshi's Story
     80,  # Kalos Pokémon League
 ]
 
 
 BANNED_FORMS = {  # ID, Reason for ban
-    20: "Framerate issues",
-    54: "2D",
-    61: "2D",
-    64: "2D",
-    81: "2D",
-    83: "Camera Issues",
-    89: "2D",
-    91: "Camera Issues",
-    93: "Grass covers objects",
-    95: "2D",
+    21: "Framerate issues",
+    55: "2D",
+    62: "2D",
+    65: "2D",
+    82: "2D",
+    84: "Camera Issues",
+    90: "2D",
+    92: "Camera Issues",
+    94: "Grass covers objects",
     96: "2D",
-    108: "Slightly lowered ceiling",
+    97: "2D",
+    109: "Slightly lowered ceiling",
 }
 
 
@@ -221,13 +243,10 @@ def generate_banned_forms_list():
     return '\n'.join(_tmp)
 
 
-
-
-
 class Stage:
     def __init__(self, _id):
         if _id not in ALL_STAGES:
-            raise ValueError("Invalid Stage ID.")
+            raise ValueError(f"Invalid Stage ID: {_id}.")
         self.id = _id
 
     @property
@@ -238,10 +257,14 @@ class Stage:
     def is_legal(self):
         return self.id in LEGAL_STAGES
 
+    @property
+    def emoji(self):
+        return STAGE_EMOJIS.get(self.id)
+
     @classmethod
     async def convert(cls, ctx, argument):
         try:
-            return cls.parse(argument)
+            return cls._parse(argument)
         except ValueError as ex:
             print(f"Invalid stage: {argument}")
             raise BadArgument(str(ex))
@@ -259,32 +282,49 @@ class Stage:
         stage is being referred to with its name or an alias.
         """
         # check if match channel, then get stagelist
-        channel = async_to_sync(models.TextChannel.from_discord_obj(ctx.channel))
+        channel = models.TextChannel.sync_from_discord_obj(ctx.channel)
         try:
-            match = ssbu_models.Match.get(channel=channel)
+            match = ssbu_models.Match.objects.get(channel=channel)
         except ssbu_models.Match.DoesNotExist:
             return Stage(number)
         # and get the stage from that (list index + 1),
-        starter_stages = match.tournament.ruleset.starter_stages
-        counterpick_stages = match.tournament.ruleset.counterpick_stages
+        starter_stages = match.ruleset.starter_stages
+        counterpick_stages = match.ruleset.counterpick_stages
         stages = starter_stages + counterpick_stages
-        return Stage(stages[number - 1])
+        print(stages[number - 1])
+        return stages[number - 1]
+
+    @classmethod
+    def _parse(cls, argument):
+        try:
+            _id = int(argument)
+            # TODO fix this
+            # make this fail so we can handle stage numbers in strike commands and such
+        except ValueError:
+            argument = str(argument)
+            _argument = argument.lower()
+            _argument = _argument.replace('’', "'")
+            _argument = _argument.replace('pokemon', 'pokémon')
+            try:
+                _id = STAGE_LOOKUP[_argument]
+            except KeyError:
+                raise ValueError('"{}" is not a valid stage.'.format(argument))
+        else:
+            raise TypeError("Cannot parse Stage from 'int'.")
+        return Stage(_id)
 
     @classmethod
     def parse(cls, argument):
         try:
             _id = int(argument)
+            # TODO fix this
             # make this fail so we can handle stage numbers in strike commands and such
         except ValueError:
-            print(f"Actually parsing {argument}")
-            print(list(STAGE_LOOKUP.keys()))
             argument = str(argument)
             try:
                 _id = STAGE_LOOKUP[argument]
             except KeyError:
                 raise ValueError('"{}" is not a valid stage.'.format(argument))
-        else:
-            raise TypeError("Cannot parse Stage from 'int'.")
         return Stage(_id)
 
     @classmethod
@@ -303,4 +343,7 @@ class Stage:
         return self.id
 
     def __str__(self):
-        return self.name
+        return f"{self.emoji} {self.name}" if self.emoji else self.name
+
+    def __eq__(self, other):
+        return isinstance(other, Stage) and self.id == other.id

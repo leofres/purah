@@ -8,20 +8,24 @@ from .models import DoublesMatch, GuildSetup, Match
 
 def match_participant_only():
     async def predicate(ctx: Context):
+        if ctx.guild is None:
+            return False
         match = Match.objects.filter(channel=await ctx.bot.db.wrap_text_channel(ctx.channel))
         match_exists = await match.async_exists()
         if not match_exists:
             return False
         match = await match.async_first()
         await match.async_load()
-        return ctx.author.id in (match.player_1.id, match.player_2.id)
+        player_1 = await match.player_1
+        player_2 = await match.player_2
+        return ctx.author.id in (player_1.id, player_2.id)
 
     return check(predicate)
 
 
 def match_only():
     async def predicate(ctx: Context):
-        match = Match.objects.filter(channel=await ctx.bot.db.wrap_text_channel(ctx.channel))
+        match = Match.objects.filter(channel__id=ctx.channel.id)
         return await match.async_exists()
 
     return check(predicate)

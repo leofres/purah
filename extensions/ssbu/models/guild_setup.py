@@ -1,5 +1,6 @@
 from hero import fields, models
 
+from .ruleset import Ruleset
 from .tournament_series import TournamentSeries
 
 
@@ -10,18 +11,15 @@ class GuildSetup(models.Model):
     guild = fields.OneToOneField(models.Guild, primary_key=True, on_delete=fields.CASCADE)
     main_series = fields.OneToOneField(TournamentSeries, null=True, blank=True, on_delete=fields.SET_NULL)
     allow_matches_in_dms = fields.BooleanField(default=False)
-    use_elo = fields.BooleanField(default=True)
-    show_elo = fields.BooleanField(default=True)
+    use_rating = fields.BooleanField(default=True)
+    show_rating = fields.BooleanField(default=True)
     verified = fields.BooleanField(default=False)  # only verified guilds affect global ELO of players
     ingame_role = fields.RoleField(null=True, blank=True, on_delete=fields.SET_NULL)
+    default_ruleset = fields.ForeignKey(Ruleset, null=True, blank=True, on_delete=fields.SET_NULL)
     player_1_blindpick_channel = fields.TextChannelField(null=True, blank=True, on_delete=fields.SET_NULL)
     player_2_blindpick_channel = fields.TextChannelField(null=True, blank=True, on_delete=fields.SET_NULL)
 
     NOT_FOUND_MESSAGE = "This server has not been set up yet, use the `to setup` command."
-
-    @property
-    def default_ruleset(self):
-        return self.main_series.ruleset
 
     @property
     def participant_role(self):

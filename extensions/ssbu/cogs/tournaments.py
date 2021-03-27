@@ -53,15 +53,6 @@ class Tournaments(hero.Cog):
         await ctx.send("Challonge credentials set.")
 
     @hero.command()
-    @ssbu_checks.match_participant_only()
-    async def strike(self, ctx, stage: Stage):
-        # TODO check if match channel, then
-        # check if stage can be striked, then
-        # add striked stage to Match's striked stages and
-        # edit the striking message accordingly
-        pass
-
-    @hero.command()
     @checks.is_owner()
     async def gettournaments(self, ctx):
         tournaments = await self.ctl.challonge_user.get_tournaments(force_update=True)
@@ -556,48 +547,6 @@ class Tournaments(hero.Cog):
     @hero.command()
     @checks.guild_only()
     async def setteamname(self, ctx: hero.Context):
-        # TODO
-        pass
-
-    @hero.command()
-    @ssbu_checks.match_participant_only()
-    async def forfeit(self, ctx: hero.Context):
-        # TODO
-        pass
-
-    @hero.command()
-    @ssbu_checks.match_participant_only()
-    async def pick(self, ctx: hero.Context):
-        # TODO
-        pass
-
-    @hero.command()
-    @ssbu_checks.match_participant_only()
-    async def accept(self, ctx: hero.Context):
-        # TODO
-        pass
-
-    @hero.command()
-    @ssbu_checks.match_participant_only()
-    async def reject(self, ctx: hero.Context):
-        # TODO
-        pass
-
-    @hero.command()
-    @ssbu_checks.match_participant_only()
-    async def won(self, ctx: hero.Context):
-        # TODO
-        pass
-
-    @hero.command()
-    @ssbu_checks.match_participant_only()
-    async def lost(self, ctx: hero.Context):
-        # TODO
-        pass
-
-    @hero.command()
-    @ssbu_checks.match_participant_only()
-    async def confirm(self, ctx: hero.Context):
         # TODO
         pass
 

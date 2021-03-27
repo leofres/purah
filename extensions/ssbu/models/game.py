@@ -1,19 +1,25 @@
 from hero import fields, models
 
 from .match import Match
-from .participant import Participant
+from ..stages import Stage
 
 
 class Game(models.Model):
     match = fields.ForeignKey(Match, null=True, on_delete=fields.SET_NULL)
     number = fields.SmallIntegerField()
-    guild = fields.GuildField(null=True, on_delete=fields.SET_NULL)
-    first_to_strike = fields.ForeignKey(Participant, null=True, on_delete=fields.SET_NULL)
+    guild = fields.GuildField(null=True, db_index=True, on_delete=fields.SET_NULL)
+    player_1_fighter = fields.SmallIntegerField(null=True, blank=True)
+    player_2_fighter = fields.SmallIntegerField(null=True, blank=True)
+    first_to_strike = fields.UserField(null=True, on_delete=fields.SET_NULL)
     striking_message = fields.MessageField(null=True, on_delete=fields.SET_NULL)
-    striked_stages = fields.SeparatedValuesField(default=[], max_length=64)
+    striked_stages = fields.SeparatedValuesField(default=[], max_length=64,
+                                                 converter=Stage.parse, serializer=Stage.serialize)
     suggested_stage = fields.SmallIntegerField(null=True, blank=True)
-    suggested_by = fields.ForeignKey(Participant, null=True, on_delete=fields.SET_NULL)
+    suggested_by = fields.UserField(null=True, on_delete=fields.SET_NULL)
     suggestion_accepted = fields.BooleanField(null=True, blank=True)
     picked_stage = fields.SmallIntegerField(null=True, blank=True)
-    winner = fields.ForeignKey(Participant, null=True, blank=True, on_delete=fields.SET_NULL)
-    needs_confirmation_by = fields.ForeignKey(Participant, null=True, blank=True, on_delete=fields.SET_NULL)
+    winner = fields.UserField(null=True, blank=True, on_delete=fields.SET_NULL)
+    needs_confirmation_by = fields.UserField(null=True, blank=True, on_delete=fields.SET_NULL)
+
+    def is_striked(self, stage):
+        return stage in self.striked_stages
