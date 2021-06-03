@@ -1,6 +1,6 @@
 [submodule "discord-hero"]
 	path = discord-hero
-	url = git@github.com:monospacedmagic/discord-hero.git
+	url = git@github.com:leofres/discord-hero.git
 [submodule "achallonge"]
 	path = achallonge
-	url = git@github.com:monospacedmagic/achallonge.git
+	url = git@github.com:leofres/achallonge.git
